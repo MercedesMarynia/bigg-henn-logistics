@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bigg Henn Logistics - Veteran Owned</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Georgia', serif;
+            background: #0f172a;
+            color: white;
+        }
+        :root {
+            --gold: #d4a574;
+            --blue: #1e3a5f;
+            --light-blue: #2c5aa0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function BigHennLogistics() {
+            const [currentPage, setCurrentPage] = useState('home');
+            const [isEditMode, setIsEditMode] = useState(false);
+            const [menuOpen, setMenuOpen] = useState(false);
+            const [formData, setFormData] = useState({
+                name: '',
+                email: '',
+                phone: '',
+                transportType: 'freight',
+                message: ''
+            });
+
+            const [content, setContent] = useState({
+                tagline: 'Premier Logistics Solutions | Veteran Owned Since 2026',
+                heroSubtitle: 'Reliable, professional transportation and logistics services built on integrity and expertise.',
+                aboutText: 'Bigg Henn Logistics is a proudly veteran-owned company dedicated to providing exceptional logistics and transportation services. Founded in 2026, we bring military discipline, reliability, and honor to every delivery.',
+                logo: null,
+                email: 'BIGGHENNS.LOGISTICS@yahoo.com',
+                phone: '443.762.6205',
+                transportTypes: [
+                    { id: 1, name: 'Freight Shipping' },
+                    { id: 2, name: 'Full Truckload (FTL)' },
+                    { id: 3, name: 'Less Than Truckload (LTL)' },
+                    { id: 4, name: 'Specialized Transport' },
+                    { id: 5, name: 'Warehouse Management' }
+                ]
+            });
+
+            const [editedContent, setEditedContent] = useState(content);
+            const [logoPreview, setLogoPreview] = useState(null);
+
+            useEffect(() => {
+                const saved = localStorage.getItem('bhl-content');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    setContent(parsed);
+                    setEditedContent(parsed);
+                    if (parsed.logo) setLogoPreview(parsed.logo);
+                }
+            }, []);
+
+            const saveContent = () => {
+                setContent(editedContent);
+                localStorage.setItem('bhl-content', JSON.stringify(editedContent));
+                setIsEditMode(false);
+            };
+
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64 = reader.result;
+                        setLogoPreview(base64);
+                        setEditedContent({...editedContent, logo: base64});
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const removeLogo = () => {
+                setLogoPreview(null);
+                setEditedContent({...editedContent, logo: null});
+            };
+
+            const handleFormSubmit = (e) => {
+                e.preventDefault();
+                alert(`Thank you for your inquiry, ${formData.name}! We'll contact you shortly.`);
+                setFormData({ name: '', email: '', phone: '', transportType: 'freight', message: '' });
+            };
+
+            const addTransportType = () => {
+                const newId = Math.max(...editedContent.transportTypes.map(t => t.id), 0) + 1;
+                setEditedContent({
+                    ...editedContent,
+                    transportTypes: [...editedContent.transportTypes, { id: newId, name: 'New Service' }]
+                });
+            };
+
+            const removeTransportType = (id) => {
+                setEditedContent({
+                    ...editedContent,
+                    transportTypes: editedContent.transportTypes.filter(t => t.id !== id)
+                });
+            };
+
+            const updateTransportType = (id, newName) => {
+                setEditedContent({
+                    ...editedContent,
+                    transportTypes: editedContent.transportTypes.map(t => 
+                        t.id === id ? { ...t, name: newName } : t
+                    )
+                });
+            };
+
+            const styles = {
+                container: {
+                    minHeight: '100vh',
+                    backgroundColor: '#0f172a',
+                    color: 'white',
+                    fontFamily: "'Georgia', serif"
+                },
+                nav: {
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '24px 32px',
+                    backgroundColor: '#030712',
+                    borderBottom: '2px solid #d4a574'
+                },
+                navBrand: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                },
+                logo: {
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '4px',
+                    background: 'linear-gradient(to bottom right, #fbbf24, #3b82f6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '18px'
+                },
+                logoImg: {
+                    width: '48px',
+                    height: '48px',
+                    objectFit: 'contain'
+                },
+                brandText: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                },
+                desktopNav: {
+                    display: 'flex',
+                    gap: '8px'
+                },
+                navItem: {
+                    padding: '12px 24px',
+                    cursor: 'pointer',
+                    borderBottom: '2px solid transparent',
+                    fontWeight: '500',
+                    transition: 'all 0.3s ease',
+                    color: currentPage.includes(currentPage) ? '#d4a574' : 'white'
+                },
+                button: {
+                    padding: '14px 32px',
+                    border: 'none',
+                    borderRadius: '2px',
+                    fontFamily: "'Georgia', serif",
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease'
+                },
+                btnPrimary: {
+                    backgroundColor: '#d4a574',
+                    color: '#1e3a5f',
+                    padding: '14px 32px'
+                },
+                btnSecondary: {
+                    backgroundColor: '#1e3a5f',
+                    color: 'white',
+                    border: '2px solid #d4a574',
+                    padding: '12px 24px'
+                },
+                hero: {
+                    minHeight: '100vh',
+                    backgroundColor: '#1e3a5f',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                },
+                heroContent: {
+                    maxWidth: '1200px',
+                    textAlign: 'center',
+                    zIndex: '10',
+                    animation: 'fadeInUp 0.8s ease-out'
+                },
+                badge: {
+                    display: 'inline-block',
+                    background: 'linear-gradient(135deg, #d4a574, #2c5aa0)',
+                    padding: '8px 20px',
+                    borderRadius: '20px',
+                    fontWeight: '600',
+                    fontSize: '12px',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    marginBottom: '20px'
+                },
+                heroTitle: {
+                    fontSize: '4rem',
+                    fontWeight: '700',
+                    marginBottom: '32px',
+                    lineHeight: '1.1'
+                },
+                goldText: {
+                    color: '#d4a574'
+                },
+                heroSubtitle: {
+                    fontSize: '24px',
+                    marginBottom: '48px',
+                    color: '#d1d5db',
+                    lineHeight: '1.5'
+                },
+                btnGroup: {
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '24px',
+                    justifyContent: 'center',
+                    flexWrap: 'wrap'
+                },
+                section: {
+                    padding: '80px 24px',
+                    maxWidth: '1200px',
+                    margin: '0 auto'
+                },
+                sectionTitle: {
+                    fontSize: '36px',
+                    fontWeight: 'bold',
+                    marginBottom: '64px',
+                    textAlign: 'center',
+                    color: '#d4a574',
+                    borderBottom: '3px solid #d4a574',
+                    display: 'inline-block',
+                    paddingBottom: '8px'
+                },
+                card: {
+                    backgroundColor: 'rgba(44, 90, 160, 0.15)',
+                    border: '1px solid #d4a574',
+                    padding: '32px',
+                    borderRadius: '4px',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                },
+                grid3: {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                    gap: '32px',
+                    marginBottom: '32px'
+                },
+                form: {
+                    maxWidth: '600px'
+                },
+                formGroup: {
+                    marginBottom: '24px',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '24px'
+                },
+                label: {
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: '#d4a574',
+                    fontWeight: '600'
+                },
+                input: {
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    border: '1px solid #d4a574',
+                    color: 'white',
+                    fontFamily: "'Georgia', serif",
+                    fontSize: '15px',
+                    borderRadius: '2px',
+                    transition: 'all 0.3s ease'
+                },
+                textarea: {
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    border: '1px solid #d4a574',
+                    color: 'white',
+                    fontFamily: "'Georgia', serif",
+                    fontSize: '15px',
+                    borderRadius: '2px',
+                    minHeight: '120px',
+                    resize: 'vertical'
+                },
+                footer: {
+                    backgroundColor: '#1e3a5f',
+                    borderTop: '2px solid #d4a574',
+                    padding: '48px 24px',
+                    marginTop: '80px'
+                },
+                footerGrid: {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                    gap: '32px',
+                    maxWidth: '1200px',
+                    margin: '0 auto 32px',
+                    paddingBottom: '32px',
+                    borderBottom: '1px solid #374151'
+                },
+                editPanel: {
+                    backgroundColor: 'rgba(212, 165, 116, 0.1)',
+                    border: '2px dashed #d4a574',
+                    padding: '20px',
+                    borderRadius: '4px',
+                    marginBottom: '20px'
+                },
+                editField: {
+                    marginBottom: '16px'
+                }
+            };
+
+            return (
+                <div style={styles.container}>
+                    <style>{`
+                        @keyframes fadeInUp {
+                            from {
+                                opacity: 0;
+                                transform: translateY(30px);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
+                        }
+                        input:focus, textarea:focus, select:focus {
+                            outline: none;
+                            background: rgba(212, 165, 116, 0.1) !important;
+                            border-color: #d4a574 !important;
+                        }
+                    `}</style>
+
+                    {/* Navigation */}
+                    <nav style={styles.nav}>
+                        <div style={styles.navBrand}>
+                            {logoPreview || content.logo ? (
+                                <img src={logoPreview || content.logo} alt="Logo" style={styles.logoImg} />
+                            ) : (
+                                <div style={styles.logo}>BH</div>
+                            )}
+                            <div>
+                                <div style={styles.brandText}>BIGG HENN</div>
+                                <div style={{fontSize: '12px', color: '#d4a574', letterSpacing: '2px'}}>LOGISTICS</div>
+                            </div>
+                        </div>
+
+                        <div style={styles.desktopNav}>
+                            {['home', 'inquiries', 'about'].map(page => (
+                                <div
+                                    key={page}
+                                    onClick={() => setCurrentPage(page)}
+                                    style={{
+                                        ...styles.navItem,
+                                        borderBottomColor: currentPage === page ? '#d4a574' : 'transparent',
+                                        color: currentPage === page ? '#d4a574' : 'white'
+                                    }}
+                                >
+                                    {page.charAt(0).toUpperCase() + page.slice(1)}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+                            <button
+                                onClick={() => setIsEditMode(!isEditMode)}
+                                style={{...styles.button, backgroundColor: 'transparent', color: '#d4a574', border: 'none'}}
+                            >
+                                {isEditMode ? '👁️ Preview' : '✏️ Edit'}
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Edit Mode */}
+                    {isEditMode && (
+                        <div style={{backgroundColor: '#1e293b', borderBottom: '2px solid #d4a574', padding: '32px'}}>
+                            <div style={{maxWidth: '800px', margin: '0 auto'}}>
+                                <h2 style={{fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#d4a574'}}>Edit Content</h2>
+                                
+                                <div style={styles.editPanel}>
+                                    <div style={styles.editField}>
+                                        <label style={styles.label}>Logo</label>
+                                        {logoPreview || content.logo ? (
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px'}}>
+                                                <img src={logoPreview || content.logo} alt="Logo" style={{height: '64px', objectFit: 'contain'}} />
+                                                <button onClick={removeLogo} style={{...styles.button, backgroundColor: '#dc2626', color: 'white'}}>Remove</button>
+                                            </div>
+                                        ) : null}
+                                        <input type="file" accept="image/*" onChange={handleLogoUpload} style={{...styles.input, padding: '8px'}} />
+                                    </div>
+
+                                    <div style={styles.editField}>
+                                        <label style={styles.label}>Email</label>
+                                        <input
+                                            type="email"
+                                            value={editedContent.email}
+                                            onChange={(e) => setEditedContent({...editedContent, email: e.target.value})}
+                                            style={styles.input}
+                                        />
+                                    </div>
+
+                                    <div style={styles.editField}>
+                                        <label style={styles.label}>Phone</label>
+                                        <input
+                                            type="text"
+                                            value={editedContent.phone}
+                                            onChange={(e) => setEditedContent({...editedContent, phone: e.target.value})}
+                                            style={styles.input}
+                                        />
+                                    </div>
+
+                                    <div style={styles.editField}>
+                                        <label style={styles.label}>Hero Subtitle</label>
+                                        <textarea
+                                            value={editedContent.heroSubtitle}
+                                            onChange={(e) => setEditedContent({...editedContent, heroSubtitle: e.target.value})}
+                                            style={styles.textarea}
+                                        />
+                                    </div>
+
+                                    <div style={styles.editField}>
+                                        <label style={styles.label}>About Text</label>
+                                        <textarea
+                                            value={editedContent.aboutText}
+                                            onChange={(e) => setEditedContent({...editedContent, aboutText: e.target.value})}
+                                            style={styles.textarea}
+                                        />
+                                    </div>
+
+                                    <div style={{display: 'flex', gap: '16px', marginTop: '24px'}}>
+                                        <button onClick={saveContent} style={{...styles.button, ...styles.btnPrimary}}>Save Changes</button>
+                                        <button onClick={() => setIsEditMode(false)} style={{...styles.button, ...styles.btnSecondary}}>Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* HOME PAGE */}
+                    {currentPage === 'home' && (
+                        <>
+                            <section style={styles.hero}>
+                                <div style={styles.heroContent}>
+                                    <div style={styles.badge}>✦ Veteran Owned Since 2026 ✦</div>
+                                    <h1 style={styles.heroTitle}>
+                                        <span style={styles.goldText}>BIGG HENN</span> LOGISTICS
+                                    </h1>
+                                    <p style={styles.heroSubtitle}>{editedContent.heroSubtitle}</p>
+                                    <div style={styles.btnGroup}>
+                                        <button
+                                            onClick={() => setCurrentPage('inquiries')}
+                                            style={{...styles.button, ...styles.btnPrimary, fontSize: '18px'}}
+                                        >
+                                            Get a Quote
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage('about')}
+                                            style={{...styles.button, ...styles.btnSecondary, fontSize: '18px'}}
+                                        >
+                                            Learn More
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section style={{...styles.section, backgroundColor: '#0f172a'}}>
+                                <h2 style={{...styles.sectionTitle, marginLeft: 'auto', marginRight: 'auto', display: 'block'}}>Why Choose Bigg Henn</h2>
+                                <div style={styles.grid3}>
+                                    {[
+                                        { title: 'Reliability', desc: 'On-time delivery, every single time' },
+                                        { title: 'Integrity', desc: 'Built on military values and honor' },
+                                        { title: 'Expertise', desc: 'Decades of combined logistics experience' }
+                                    ].map((item, i) => (
+                                        <div key={i} style={styles.card}>
+                                            <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#d4a574', marginBottom: '16px'}}>{item.title}</h3>
+                                            <p style={{color: '#d1d5db'}}>{item.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        </>
+                    )}
+
+                    {/* INQUIRIES PAGE */}
+                    {currentPage === 'inquiries' && (
+                        <section style={{...styles.section, minHeight: '100vh'}}>
+                            <h1 style={{fontSize: '36px', fontWeight: 'bold', marginBottom: '16px', color: '#d4a574'}}>Request a Quote</h1>
+                            <p style={{color: '#d1d5db', marginBottom: '48px'}}>Send us your transport requirements and we'll get back to you.</p>
+
+                            <form onSubmit={handleFormSubmit} style={styles.form}>
+                                <div style={styles.formGroup}>
+                                    <div>
+                                        <label style={styles.label}>Full Name *</label>
+                                        <input
+                                            type="text"
+                                            placeholder="John Smith"
+                                            required
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                            style={styles.input}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={styles.label}>Email *</label>
+                                        <input
+                                            type="email"
+                                            placeholder="john@example.com"
+                                            required
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                            style={styles.input}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={styles.formGroup}>
+                                    <div>
+                                        <label style={styles.label}>Phone Number *</label>
+                                        <input
+                                            type="tel"
+                                            placeholder="(555) 123-4567"
+                                            required
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                            style={styles.input}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style={styles.label}>Service Type *</label>
+                                        <select
+                                            required
+                                            value={formData.transportType}
+                                            onChange={(e) => setFormData({...formData, transportType: e.target.value})}
+                                            style={{...styles.input, cursor: 'pointer'}}
+                                        >
+                                            {editedContent.transportTypes.map(type => (
+                                                <option key={type.id} value={type.id}>{type.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style={styles.editField}>
+                                    <label style={styles.label}>Message / Details *</label>
+                                    <textarea
+                                        placeholder="Describe your transport needs..."
+                                        required
+                                        value={formData.message}
+                                        onChange={(e) => setFormData({...formData, message: e.target.value})}
+                                        style={styles.textarea}
+                                    />
+                                </div>
+
+                                <button type="submit" style={{...styles.button, ...styles.btnPrimary, width: '100%', fontSize: '18px', padding: '16px'}}>Submit Inquiry</button>
+                            </form>
+                        </section>
+                    )}
+
+                    {/* ABOUT PAGE */}
+                    {currentPage === 'about' && (
+                        <section style={{...styles.section, minHeight: '100vh'}}>
+                            <h1 style={{fontSize: '36px', fontWeight: 'bold', marginBottom: '32px', color: '#d4a574'}}>About Bigg Henn</h1>
+
+                            <div style={{...styles.card, marginBottom: '48px', fontSize: '18px', lineHeight: '1.6'}}>
+                                <p style={{marginBottom: '24px'}}>{editedContent.aboutText}</p>
+                                <div style={styles.badge}>✦ Proudly Veteran Owned ✦</div>
+                                <p style={{color: '#d1d5db', marginTop: '24px'}}>
+                                    Our commitment to excellence stems from the values we learned in service: honor, dedication, and unwavering commitment to our mission.
+                                </p>
+                            </div>
+
+                            <div style={styles.grid3}>
+                                <div style={styles.card}>
+                                    <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#d4a574', marginBottom: '16px'}}>Our Services</h3>
+                                    <ul style={{listStyle: 'none'}}>
+                                        {editedContent.transportTypes.map(type => (
+                                            <li key={type.id} style={{marginBottom: '12px', color: '#d1d5db'}}>▸ {type.name}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div style={styles.card}>
+                                    <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#d4a574', marginBottom: '16px'}}>Our Promise</h3>
+                                    <p style={{color: '#d1d5db', lineHeight: '1.6'}}>
+                                        We deliver more than packages—we deliver peace of mind. Every team member embodies the values of reliability, professionalism, and respect.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{...styles.card, textAlign: 'center', marginTop: '48px'}}>
+                                <h3 style={{fontSize: '32px', fontWeight: 'bold', color: '#d4a574', marginBottom: '24px'}}>Ready to Work With Us?</h3>
+                                <button
+                                    onClick={() => setCurrentPage('inquiries')}
+                                    style={{...styles.button, ...styles.btnPrimary, marginBottom: '32px', fontSize: '18px'}}
+                                >
+                                    Get Started Today
+                                </button>
+                                <div style={{borderTop: '1px solid #374151', paddingTop: '32px'}}>
+                                    <p style={{color: '#d1d5db', fontSize: '14px', marginBottom: '16px'}}>Or reach out directly:</p>
+                                    <a href={`mailto:${editedContent.email}`} style={{display: 'block', color: '#d4a574', fontWeight: 'bold', fontSize: '18px', marginBottom: '8px', textDecoration: 'none'}}>
+                                        {editedContent.email}
+                                    </a>
+                                    <a href={`tel:${editedContent.phone}`} style={{display: 'block', color: '#d4a574', fontWeight: 'bold', fontSize: '18px', textDecoration: 'none'}}>
+                                        {editedContent.phone}
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Footer */}
+                    <footer style={styles.footer}>
+                        <div style={styles.footerGrid}>
+                            <div>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px'}}>
+                                    <div style={{width: '32px', height: '32px', background: 'linear-gradient(to bottom right, #fbbf24, #3b82f6)', borderRadius: '2px'}}></div>
+                                    <span style={{fontWeight: 'bold'}}>BIGG HENN LOGISTICS</span>
+                                </div>
+                                <p style={{color: '#9ca3af', fontSize: '14px'}}>Veteran Owned Since 2026</p>
+                            </div>
+                            <div>
+                                <h4 style={{color: '#d4a574', fontWeight: 'bold', marginBottom: '16px'}}>Quick Links</h4>
+                                <div style={{color: '#9ca3af', fontSize: '14px', lineHeight: '1.8'}}>
+                                    <p style={{cursor: 'pointer'}} onClick={() => setCurrentPage('home')}>Home</p>
+                                    <p style={{cursor: 'pointer'}} onClick={() => setCurrentPage('inquiries')}>Inquiries</p>
+                                    <p style={{cursor: 'pointer'}} onClick={() => setCurrentPage('about')}>About</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style={{color: '#d4a574', fontWeight: 'bold', marginBottom: '16px'}}>Contact</h4>
+                                <p style={{color: '#9ca3af', fontSize: '14px'}}>{editedContent.email}</p>
+                                <p style={{color: '#9ca3af', fontSize: '14px'}}>{editedContent.phone}</p>
+                            </div>
+                        </div>
+                        <div style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px'}}>
+                            <p>&copy; 2026 Bigg Henn Logistics. All rights reserved. Veteran Owned Business.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<BigHennLogistics />, document.getElementById('root'));
+    </script>
+</body>
+</html>
